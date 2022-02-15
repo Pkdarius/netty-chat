@@ -5,51 +5,81 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-
-import java.util.Scanner;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.example.dto.Request;
+import org.example.handler.ClientHandler;
 
 public class ChatClient {
 
-    static final String HOST = "127.0.0.1";
-    static final int PORT = 8007;
-    static String clientName;
+    private static final String HOST = "127.0.0.1";
+    private static final int PORT = 8007;
+    private final ClientHandler clientHandler;
+    private ChannelFuture future;
+    private EventLoopGroup group;
 
-    public static void main(String[] args) throws Exception {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Please enter your name: ");
-        if (scanner.hasNext()) {
-            clientName = scanner.nextLine();
-            System.out.println("Welcome " + clientName);
-        }
-
-        EventLoopGroup group = new NioEventLoopGroup();
+    public ChatClient(ClientHandler clientHandler) {
+        this.clientHandler = clientHandler;
         try {
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(group)
-                    .channel(NioSocketChannel.class)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            ChannelPipeline pipeline = socketChannel.pipeline();
+            setup();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-                            pipeline.addLast(new StringDecoder());
-                            pipeline.addLast(new StringEncoder());
+    private void setup() throws Exception {
+        group = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(group)
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        ChannelPipeline pipeline = socketChannel.pipeline();
 
-                            pipeline.addLast(new ClientHandler());
-                        }
-                    });
-            ChannelFuture future = bootstrap.connect(HOST, PORT).sync();
+                        pipeline.addLast(new ObjectEncoder(),
+                                new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                clientHandler);
+                    }
+                });
+        future = bootstrap.connect(HOST, PORT).sync();
+    }
 
-            while (scanner.hasNext()) {
-                String input = scanner.nextLine();
-                Channel channel = future.sync().channel();
-                channel.writeAndFlush("[" + clientName + "]: " + input);
-                channel.flush();
-            }
+    public void login(String username) throws InterruptedException {
+        future.sync().channel().writeAndFlush(
+                Request.builder()
+                        .type(Request.MessageType.LOGIN)
+                        .from(username)
+                        .build());
+    }
 
+    public void sendMessage(String from, String to, String message) throws Exception {
+        future.sync().channel().writeAndFlush(
+                Request.builder()
+                        .type(Request.MessageType.CHAT)
+                        .from(from)
+                        .to(to)
+                        .message(message)
+                        .build()
+        );
+    }
+
+    public void getHistoryMessages(String from, String to) throws Exception {
+        future.sync().channel().writeAndFlush(
+                Request.builder()
+                        .type(Request.MessageType.GET_MESSAGE)
+                        .from(from)
+                        .to(to)
+                        .build()
+        );
+    }
+
+    public void tearDown() {
+        try {
             future.channel().closeFuture().sync();
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             group.shutdownGracefully();
         }

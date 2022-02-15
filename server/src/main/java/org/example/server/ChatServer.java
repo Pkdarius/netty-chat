@@ -8,14 +8,31 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.example.handler.ServerHandler;
+import org.example.queue.QueueHandler;
 
 public class ChatServer {
 
     static final int PORT = 8007;
 
     public static void main(String[] args) {
+        Integer corePoolSize = null, maximumPoolSize = null;
+        for (int i = 0; i < args.length; i++) {
+            String[] split = args[i].split("=");
+            switch (split[0]) {
+                case "--corePoolSize":
+                    corePoolSize = Integer.parseInt(split[1]);
+                    break;
+                case "--maximumPoolSize":
+                    maximumPoolSize = Integer.parseInt(split[1]);
+                    break;
+            }
+        }
+        new Thread(new QueueHandler(corePoolSize, maximumPoolSize)).start();
+
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -27,10 +44,10 @@ public class ChatServer {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) {
                             ChannelPipeline pipeline = socketChannel.pipeline();
-                            pipeline.addLast(new StringDecoder());
-                            pipeline.addLast(new StringEncoder());
-
-                            pipeline.addLast(new ServerHandler());
+                            pipeline.addLast(
+                                    new ObjectEncoder(),
+                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                    new ServerHandler());
                         }
                     });
             ChannelFuture future = bootstrap.bind(PORT).sync();
@@ -40,7 +57,6 @@ public class ChatServer {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            System.out.println("shutting down");
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
