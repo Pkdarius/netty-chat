@@ -54,7 +54,7 @@ public class MessengerForm extends JFrame {
         txtMessage.setEnabled(false);
 
         btnSend = new JButton();
-        btnSend.setText("Send");
+        btnSend.setText("Gửi");
         btnSend.setEnabled(false);
         btnSend.addActionListener(e -> sendMessage());
 
@@ -189,7 +189,7 @@ public class MessengerForm extends JFrame {
             btnLogin.setVisible(false);
             btnChatWith.setVisible(true);
 
-            this.setTitle("Loged in with username " + clientName);
+            this.setTitle(clientName);
         } else {
             DialogUtils.showErrorDialog("Tên đăng nhập đã được sử dụng, vui lòng chọn tên khác!");
             btnLogin.setEnabled(true);

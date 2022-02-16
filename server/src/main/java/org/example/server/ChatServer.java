@@ -23,12 +23,8 @@ public class ChatServer {
         for (int i = 0; i < args.length; i++) {
             String[] split = args[i].split("=");
             switch (split[0]) {
-                case "--corePoolSize":
-                    corePoolSize = Integer.parseInt(split[1]);
-                    break;
-                case "--maximumPoolSize":
-                    maximumPoolSize = Integer.parseInt(split[1]);
-                    break;
+                case "--corePoolSize" -> corePoolSize = Integer.parseInt(split[1]);
+                case "--maximumPoolSize" -> maximumPoolSize = Integer.parseInt(split[1]);
             }
         }
         new Thread(new QueueHandler(corePoolSize, maximumPoolSize)).start();
