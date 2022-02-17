@@ -26,15 +26,7 @@ public class QueueHandler implements Runnable {
         var threadPoolExecutor = new ThreadPoolExecutor(corePoolSize,maximumPoolSize,1L, TimeUnit.MINUTES, blockQueueRunnable);
 
         while (true) {
-            try {
-                Thread.sleep(1);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (messageQueue.isEmpty()) {
-                continue;
-            }
-            RequestWrapper requestWrapper = messageQueue.get();
+            RequestWrapper requestWrapper = messageQueue.take();
             if (requestWrapper != null) {
                 threadPoolExecutor.execute(new RequestHandler(requestWrapper));
             }
