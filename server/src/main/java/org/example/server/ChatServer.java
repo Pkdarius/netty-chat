@@ -8,9 +8,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.example.encode.CustomDecoder;
+import org.example.encode.CustomEncoder;
 import org.example.handler.ServerHandler;
 import org.example.queue.QueueHandler;
 
@@ -41,8 +40,10 @@ public class ChatServer {
                         protected void initChannel(SocketChannel socketChannel) {
                             ChannelPipeline pipeline = socketChannel.pipeline();
                             pipeline.addLast(
-                                    new ObjectEncoder(),
-                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+//                                    new ObjectEncoder(),
+//                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                    new CustomEncoder(),
+                                    new CustomDecoder(),
                                     new ServerHandler());
                         }
                     });

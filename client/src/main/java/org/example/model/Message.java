@@ -2,8 +2,7 @@ package org.example.model;
 
 import lombok.*;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 import java.time.Instant;
 
 @Getter

@@ -9,6 +9,8 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import org.example.dto.Request;
+import org.example.encode.CustomDecoder;
+import org.example.encode.CustomEncoder;
 import org.example.handler.ClientHandler;
 
 public class ChatClient {
@@ -38,8 +40,9 @@ public class ChatClient {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline pipeline = socketChannel.pipeline();
 
-                        pipeline.addLast(new ObjectEncoder(),
-                                new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                        pipeline.addLast(
+                                new CustomEncoder(),
+                                new CustomDecoder(),
                                 clientHandler);
                     }
                 });
