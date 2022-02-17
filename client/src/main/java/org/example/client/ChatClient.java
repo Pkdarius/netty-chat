@@ -51,6 +51,7 @@ public class ChatClient {
                 Request.builder()
                         .type(Request.MessageType.LOGIN)
                         .from(username)
+                        .time(System.currentTimeMillis())
                         .build());
     }
 
@@ -61,6 +62,7 @@ public class ChatClient {
                         .from(from)
                         .to(to)
                         .message(message)
+                        .time(System.currentTimeMillis())
                         .build()
         );
     }

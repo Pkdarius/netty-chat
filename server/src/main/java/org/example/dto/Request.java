@@ -24,4 +24,5 @@ public class Request implements Serializable {
 
     private MessageType type;
     private String message;
+    private Long time;
 }

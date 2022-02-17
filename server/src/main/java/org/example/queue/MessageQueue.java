@@ -32,16 +32,12 @@ public class MessageQueue {
         }
     }
 
-    public RequestWrapper get() {
+    public RequestWrapper take() {
         try {
             return queue.take();
         } catch (InterruptedException e) {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public boolean isEmpty() {
-        return queue.size() == 0;
     }
 }

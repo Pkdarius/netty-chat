@@ -15,6 +15,15 @@ public class RequestWrapper implements Comparable<RequestWrapper>  {
 
     @Override
     public int compareTo(RequestWrapper o) {
-        return 0;
+        if (this.request.getTime() - o.request.getTime() > 0) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "RequestWrapper{}";
     }
 }
